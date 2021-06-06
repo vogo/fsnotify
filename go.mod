@@ -1,5 +1,5 @@
-module github.com/fsnotify/fsnotify
+module github.com/vogo/fsnotify
 
-go 1.13
+go 1.16
 
-require golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9
+require golang.org/x/sys v0.0.0-20210603125802-9665404d3644
