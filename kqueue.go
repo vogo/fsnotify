@@ -92,10 +92,15 @@ func (w *Watcher) Close() error {
 
 // Add starts watching the named file or directory (non-recursively).
 func (w *Watcher) Add(name string) error {
+	return w.AddWatch(name, noteAllEvents)
+}
+
+// AddWatch starts watching the named file or directory (non-recursively) for given flags.
+func (w *Watcher) AddWatch(name string, flags uint32) error {
 	w.mu.Lock()
 	w.externalWatches[name] = true
 	w.mu.Unlock()
-	_, err := w.AddWatch(name, noteAllEvents)
+	_, err := w.internalAddWatch(name, flags)
 	return err
 }
 
@@ -153,10 +158,10 @@ const noteAllEvents = unix.NOTE_DELETE | unix.NOTE_WRITE | unix.NOTE_ATTRIB | un
 // keventWaitTime to block on each read from kevent
 var keventWaitTime = durationToTimespec(100 * time.Millisecond)
 
-// AddWatch adds name to the watched file set.
+// internalAddWatch adds name to the watched file set.
 // The flags are interpreted as described in kevent(2).
 // Returns the real path to the file which was added, if any, which may be different from the one passed in the case of symlinks.
-func (w *Watcher) AddWatch(name string, flags uint32) (string, error) {
+func (w *Watcher) internalAddWatch(name string, flags uint32) (string, error) {
 	var isDir bool
 	// Make ./name and name equivalent
 	name = filepath.Clean(name)
@@ -471,11 +476,11 @@ func (w *Watcher) internalWatch(name string, fileInfo os.FileInfo) (string, erro
 		w.mu.Unlock()
 
 		flags |= unix.NOTE_DELETE | unix.NOTE_RENAME
-		return w.AddWatch(name, flags)
+		return w.internalAddWatch(name, flags)
 	}
 
 	// watch file to mimic Linux inotify
-	return w.AddWatch(name, noteAllEvents)
+	return w.internalAddWatch(name, noteAllEvents)
 }
 
 // kqueue creates a new kernel event queue and returns a descriptor.

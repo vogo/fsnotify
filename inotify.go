@@ -97,7 +97,7 @@ func (w *Watcher) Add(name string) error {
 }
 
 // AddWatch starts watching the named file or directory (non-recursively) for given flag.
-func (w *Watcher) AddWatch(name string, flag int32) error {
+func (w *Watcher) AddWatch(name string, flags uint32) error {
 	name = filepath.Clean(name)
 	if w.isClosed() {
 		return errors.New("inotify instance already closed")
